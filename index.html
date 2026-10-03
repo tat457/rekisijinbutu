@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>キッズ れきし はかせ - しょうがっこうの れきし人物 かんぜん網羅！</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Friendly Japanese Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            background: linear-gradient(135deg, #fff9e6 0%, #e6f7ff 100%);
+            min-height: 100vh;
+        }
+
+        /* Pop & Interactive UI Effects */
+        .btn-bounce {
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s;
+        }
+        .btn-bounce:active {
+            transform: scale(0.92) translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2) !important;
+        }
+
+        .card-shadow { box-shadow: 0 8px 0 #cbd5e1, 0 12px 20px rgba(0,0,0,0.06); }
+        .card-shadow-pink { box-shadow: 0 8px 0 #f472b6, 0 12px 20px rgba(244, 114, 182, 0.2); }
+        .card-shadow-yellow { box-shadow: 0 8px 0 #f59e0b, 0 12px 20px rgba(245, 158, 11, 0.2); }
+        .card-shadow-blue { box-shadow: 0 8px 0 #3b82f6, 0 12px 20px rgba(59, 130, 246, 0.2); }
+        .card-shadow-green { box-shadow: 0 8px 0 #10b981, 0 12px 20px rgba(16, 185, 129, 0.2); }
+
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Sparkle Pulse Glow */
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(255,215,0,0.6)); }
+            50% { filter: drop-shadow(0 0 18px rgba(255,215,0,0.95)); }
+        }
+        .glow-effect {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Silhouette mode for quiz */
+        .silhouette-mode .char-icon-display {
+            filter: brightness(0) opacity(0.85);
+            transition: filter 0.5s ease-in-out;
+        }
+        .revealed-mode .char-icon-display {
+            filter: brightness(1) opacity(1);
+            transition: filter 0.5s ease-in-out;
+        }
+
+        /* Fullscreen Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Custom Scrollbar for Era Tabs */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom Toast Notification */
+        #toast-notification {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col justify-between overflow-x-hidden min-h-screen">
+
+    <!-- Confetti Overlay -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Friendly Toast Message Overlay -->
+    <div id="toast-notification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white font-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border-2 border-yellow-400 opacity-0 pointer-events-none transform -translate-y-6">
+        <span id="toast-icon" class="text-2xl">✨</span>
+        <span id="toast-message" class="text-sm sm:text-base">メッセージ</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="p-3 md:p-4 bg-white/90 backdrop-blur border-b-4 border-yellow-400 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <button onclick="switchMode('home')" class="btn-bounce flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-black px-4 py-2 rounded-2xl border-b-4 border-yellow-600">
+                <i class="fa-solid fa-house text-xl"></i>
+                <span class="text-lg hidden sm:inline">おうち</span>
+            </button>
+
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-black text-center text-amber-500 tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-crown text-yellow-400 animate-bounce"></i>
+                キッズ れきし はかせ
+            </h1>
+
+            <div class="flex items-center gap-2">
+                <!-- Sound Toggle -->
+                <button id="sound-btn" onclick="toggleSound()" class="btn-bounce bg-pink-100 hover:bg-pink-200 text-pink-600 p-3 rounded-2xl border-b-4 border-pink-300">
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-xl"></i>
+                </button>
+                <!-- Sticker Count Button -->
+                <div onclick="switchMode('stickers')" class="cursor-pointer btn-bounce bg-amber-100 border-2 border-amber-300 rounded-2xl px-3 py-1 flex items-center gap-1 text-amber-800 font-bold">
+                    <span class="text-xl">⭐️</span>
+                    <span id="sticker-count" class="text-xl font-black">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main id="app-container" class="max-w-4xl mx-auto p-4 flex-grow w-full">
+
+        <!-- ================= HOME SCREEN ================= -->
+        <section id="view-home" class="space-y-6 text-center py-4">
+            <div class="relative inline-block my-2">
+                <div class="bg-gradient-to-r from-amber-400 via-pink-400 to-indigo-400 p-1 rounded-3xl shadow-lg">
+                    <div class="bg-white rounded-[22px] px-6 py-4">
+                        <p class="text-sm sm:text-base text-slate-500 font-bold mb-1">しょうがっこうの れきし人物 42にん かんぜん網羅！</p>
+                        <h2 class="text-2xl sm:text-4xl font-black text-slate-800 tracking-wide">
+                            なにをして あそぶ？
+                        </h2>
+                    </div>
+                </div>
+                <span class="absolute -top-4 -right-4 text-4xl animate-bounce">✨</span>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 pt-2">
+                <!-- Menu Item 1: 図鑑 -->
+                <button onclick="switchMode('zukan')" class="btn-bounce card-shadow-pink bg-gradient-to-b from-pink-100 to-pink-200 hover:to-pink-300 border-4 border-pink-400 rounded-3xl p-5 flex flex-col items-center gap-3 text-pink-900 group">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform">
+                        🎨
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black">れきし ズカン</span>
+                        <span class="text-xs sm:text-sm font-bold opacity-80">教科書（きょうかしょ）の42にん＋α！</span>
+                    </div>
+                </button>
+
+                <!-- Menu Item 2: クイズ -->
+                <button onclick="switchMode('quiz')" class="btn-bounce card-shadow-yellow bg-gradient-to-b from-amber-100 to-amber-200 hover:to-amber-300 border-4 border-amber-400 rounded-3xl p-5 flex flex-col items-center gap-3 text-amber-900 group">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform">
+                        ❓
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black">これ だれだ？ クイズ</span>
+                        <span class="text-xs sm:text-sm font-bold opacity-80">かげを みて なまえを あてよう！</span>
+                    </div>
+                </button>
+
+                <!-- Menu Item 3: ミニゲーム -->
+                <button onclick="switchMode('minigame')" class="btn-bounce card-shadow-blue bg-gradient-to-b from-sky-100 to-sky-200 hover:to-sky-300 border-4 border-sky-400 rounded-3xl p-5 flex flex-col items-center gap-3 text-sky-900 group">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform">
+                        💡
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black">ひらめき！たいけん</span>
+                        <span class="text-xs sm:text-sm font-bold opacity-80">エジソンと でんきを つけよう！</span>
+                    </div>
+                </button>
+
+                <!-- Menu Item 4: シール帳 -->
+                <button onclick="switchMode('stickers')" class="btn-bounce card-shadow-green bg-gradient-to-b from-emerald-100 to-emerald-200 hover:to-emerald-300 border-4 border-emerald-400 rounded-3xl p-5 flex flex-col items-center gap-3 text-emerald-900 group">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform">
+                        🌟
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black">シール ちょう</span>
+                        <span class="text-xs sm:text-sm font-bold opacity-80">あつめた シールを みてみよう！</span>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= ZUKAN VIEW ================= -->
+        <section id="view-zukan" class="hidden space-y-4">
+            <div class="flex items-center justify-between bg-white p-4 rounded-3xl shadow-md border-2 border-pink-200">
+                <div>
+                    <h2 class="text-2xl font-black text-pink-600">れきし ズカン（全<span id="zukan-total-count">0</span>人）</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 font-bold">カードを タッチすると しゃべるよ！</p>
+                </div>
+                <div class="text-3xl animate-bounce">🗣️</div>
+            </div>
+
+            <!-- Era Filter Tabs -->
+            <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                <button onclick="filterEra('all', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-pink-500 text-white shadow">ぜんぶ</button>
+                <button onclick="filterEra('飛鳥・奈良', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200">飛鳥・奈良</button>
+                <button onclick="filterEra('平安', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200">平安</button>
+                <button onclick="filterEra('鎌倉・室町', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200">鎌倉・室町</button>
+                <button onclick="filterEra('安土桃山', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200">安土桃山</button>
+                <button onclick="filterEra('江戸', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200">江戸</button>
+                <button onclick="filterEra('明治〜現代', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200">明治〜現代</button>
+                <button onclick="filterEra('世界の偉人', this)" class="era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200">せかいの偉人</button>
+            </div>
+
+            <!-- Person Cards Grid -->
+            <div id="zukan-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                <!-- Dynamically Generated -->
+            </div>
+        </section>
+
+        <!-- ZUKAN DETAIL MODAL -->
+        <div id="zukan-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 border-4 border-yellow-400 shadow-2xl relative animate-float">
+                <button onclick="closeZukanModal()" class="absolute -top-4 -right-4 bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full font-black text-2xl border-4 border-white shadow-lg btn-bounce flex items-center justify-center">×</button>
+
+                <div id="modal-content" class="text-center space-y-4">
+                    <!-- Dynamic Detail Content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= QUIZ VIEW ================= -->
+        <section id="view-quiz" class="hidden space-y-6 text-center">
+            <div class="bg-amber-100 border-4 border-amber-300 p-4 rounded-3xl flex items-center justify-between text-amber-900">
+                <div>
+                    <h2 class="text-2xl font-black">これ だれだ？ クイズ</h2>
+                    <p class="text-xs sm:text-sm font-bold">かげを みて、だれか あててね！</p>
+                </div>
+                <div class="text-4xl animate-pulse">❓</div>
+            </div>
+
+            <div class="bg-white border-4 border-amber-300 rounded-3xl p-6 shadow-xl space-y-6 max-w-lg mx-auto">
+                <!-- Quiz Progress Bar -->
+                <div class="flex justify-between items-center text-xs font-black text-amber-800">
+                    <span id="quiz-progress-text">だい 1 もん</span>
+                    <span id="quiz-score-text">せいかい: 0</span>
+                </div>
+
+                <!-- Silhouette Display Box -->
+                <div id="quiz-silhouette-box" class="silhouette-mode bg-amber-50 border-4 border-dashed border-amber-200 rounded-3xl p-6 h-56 flex flex-col items-center justify-center relative overflow-hidden">
+                    <div id="quiz-char-icon" class="char-icon-display mb-2 flex items-center justify-center">
+                        <!-- Visual Icon or Image -->
+                    </div>
+                    <p id="quiz-hint" class="text-xs font-bold text-amber-700 bg-amber-200/60 px-3 py-1 rounded-full">時代: ？？？</p>
+
+                    <div id="quiz-feedback-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm hidden flex flex-col items-center justify-center text-3xl font-black text-pink-600 p-4">
+                        <span id="quiz-feedback-emoji" class="text-6xl animate-bounce">⭕️️</span>
+                        <span id="quiz-feedback-name" class="mt-2 text-2xl">せいかい！</span>
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Options -->
+                <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Option buttons generated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MINIGAME VIEW ================= -->
+        <section id="view-minigame" class="hidden space-y-4 text-center">
+            <div class="bg-sky-100 border-4 border-sky-300 p-4 rounded-3xl text-sky-900 flex items-center justify-between">
+                <div class="text-left">
+                    <h2 class="text-xl sm:text-2xl font-black">💡 エジソンの でんき パズル</h2>
+                    <p class="text-xs sm:text-sm font-bold mt-1">なんどもためして ぜんぶの でんきを つけよう！</p>
+                </div>
+                <div class="text-4xl animate-bounce">💡</div>
+            </div>
+
+            <!-- Puzzle Help & Meaning Card -->
+            <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 text-left space-y-2 text-xs sm:text-sm text-slate-700 font-bold">
+                <div class="flex items-center gap-2 text-amber-900 font-black">
+                    <span>📖 あそびかたの ルール：</span>
+                </div>
+                <p>・スイッチを おすと、**「そのばしょ」と「ひだりとなり」**の でんきが ひっくりかえるよ！</p>
+                <div class="border-t border-amber-200 pt-2 flex items-start gap-2 text-amber-900">
+                    <span class="text-base">👨‍🔬</span>
+                    <p><strong class="font-black">エジソンの ひみつ：</strong> エジソンは「なんかいも ためすこと（試行錯誤）」で でんきを発明したよ！ いろいろ おして ひらめこう！</p>
+                </div>
+            </div>
+
+            <!-- Puzzle Play Board -->
+            <div class="bg-slate-900 border-8 border-yellow-500 rounded-3xl p-6 shadow-2xl relative overflow-hidden max-w-md mx-auto">
+                <div class="text-amber-300 text-sm font-bold mb-4 flex justify-between items-center">
+                    <span>つくった でんき: <span id="game-score" class="text-2xl font-black text-yellow-400">0</span> / 5</span>
+                    <button onclick="resetGame()" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-1.5 rounded-xl text-white font-bold border border-slate-500">りせっと</button>
+                </div>
+
+                <!-- Bulb Area -->
+                <div id="bulb-grid" class="grid grid-cols-5 gap-1 sm:gap-2 my-6 justify-items-center">
+                    <!-- Interactive Bulbs -->
+                </div>
+
+                <div id="game-message" class="text-yellow-300 font-black text-base min-h-[2.5rem] flex items-center justify-center">
+                    スイッチを おしてみてね！
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STICKERS VIEW ================= -->
+        <section id="view-stickers" class="hidden space-y-6">
+            <div class="bg-emerald-100 border-4 border-emerald-300 p-4 rounded-3xl flex items-center justify-between text-emerald-900">
+                <div>
+                    <h2 class="text-2xl font-black">ごほうび シールちょう</h2>
+                    <p class="text-xs sm:text-sm font-bold">クイズや パズルで シールが もらえるよ！</p>
+                </div>
+                <div class="text-4xl">🌟</div>
+            </div>
+
+            <div id="sticker-grid" class="bg-white border-4 border-emerald-200 rounded-3xl p-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 min-h-[250px] shadow-inner">
+                <!-- Dynamically generated sticker slots -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-3 bg-white/80 backdrop-blur border-t-2 border-slate-200 text-center text-xs text-slate-500 font-bold">
+        キッズ れきし はかせ — 小学校で学ぶ歴史人物（42人＋α）対応アプリ
+    </footer>
+
+    <script>
+        /* Complete 42 Primary Curriculum Historical Figures + Bonus Figures 
+           ※ 各人物の `image` プロパティに画像URL（https://...）または Data URI（data:image/...）を手動入力できます。
+              指定がない（空の）場合は `icon`（絵文字）が自動で適用されます。
+        */
+        const HISTORICAL_FIGURES = [
+            // 飛鳥・奈良時代
+            { id: 'himiko', era: '飛鳥・奈良', name: 'ひみこ', kanji: '卑弥呼', title: 'ヤマタイ国の じょおう', icon: '👑', image: '', color: 'from-purple-100 to-pink-100 border-purple-300', speech: 'わたしは ひみこ です。ふしぎな ちからで ヤマタイ国を まとめました！', description: '中国の古い本にも登場する、日本の古代の女王さま。' },
+            { id: 'shotoku', era: '飛鳥・奈良', name: 'しょうとくたいし', kanji: '聖徳太子', title: 'じゅうにしにかんい・じゅうななじょう', icon: '📜', image: '', color: 'from-amber-100 to-orange-100 border-amber-300', speech: 'わたしは 聖徳太子です。みんなが なかよく くらせる ルール（十七条の憲法）を つくりました！', description: '推古天皇を助け、新しい国づくりや法隆寺の建築を行いました。' },
+            { id: 'onomoko', era: '飛鳥・奈良', name: 'おののいもこ', kanji: '小野妹子', title: 'けんとうし（けんずいし）', icon: '⛵️', image: '', color: 'from-blue-100 to-indigo-100 border-blue-300', speech: 'わたしは 小野妹子！ つかいとして 中国（随）に 渡りました！', description: '聖徳太子の命令で中国（随）へ派遣された使者。' },
+            { id: 'naka_ooe', era: '飛鳥・奈良', name: 'なかのおおえのおうじ', kanji: '中大兄皇子', title: 'たいかのかいしん', icon: '⚔️', image: '', color: 'from-red-100 to-amber-100 border-red-300', speech: 'わたしは 中大兄皇子！ 中臣鎌足とともに 大化の改新を 行いました！', description: 'のちの天智天皇。蘇我氏をたおし、天皇中心の政治をめざした。' },
+            { id: 'nakatomi', era: '飛鳥・奈良', name: 'なかとみのかまたり', kanji: '中臣鎌足', title: 'ふじわらの しそ', icon: '🏹', image: '', color: 'from-emerald-100 to-teal-100 border-emerald-300', speech: 'わたしは 中臣鎌足！ 藤原の なまえを さずかりました！', description: '中大兄皇子とともに大化の改新をすすめた人物。' },
+            { id: 'shomu', era: '飛鳥・奈良', name: 'しょうむてんのう', kanji: '聖武天皇', title: 'だいぶつを たてた てんのう', icon: '🛕', image: '', color: 'from-yellow-100 to-amber-100 border-yellow-300', speech: 'わたしは 聖武天皇。仏の ちからで へいわを 願い、東大寺の大仏を つくらせました！', description: '国ごとに国分寺を建て、奈良の大仏を作った天皇。' },
+            { id: 'gyoki', era: '飛鳥・奈良', name: 'ぎょうき', kanji: '行基', title: 'だいぶつづくりを たすけた おてらのお坊さん', icon: '🙏', image: '', color: 'from-amber-100 to-yellow-100 border-amber-300', speech: 'わたしは 行基です！ 人々のために 橋や ため池を つくり、大仏づくりを たすけました！', description: '民衆のために橋や池を作り、大仏建立に協力した高僧。' },
+            { id: 'ganjin', era: '飛鳥・奈良', name: 'がんじん', kanji: '鑑真', title: 'とうしょうだいじを ひらいた 僧', icon: '🏯', image: '', color: 'from-amber-100 to-stone-100 border-amber-300', speech: 'わたしは 鑑真です。なんども 船が しずみながらも 日本へ やってきました！', description: '唐（中国）から何度も困難を乗り越えて日本に来たお坊さん。' },
+
+            // 平安時代
+            { id: 'kanmu', era: '平安', name: 'かんむてんのう', kanji: '桓武天皇', title: 'へいあんきょうを つくった てんのう', icon: '🏛', image: '', color: 'from-purple-100 to-indigo-100 border-purple-300', speech: 'わたしは 桓武天皇！ 794年に 平安京（京都）へ みやこを うつしました！', description: '鳴くよウグイス平安京でおなじみ、京都に都を開いた天皇。' },
+            { id: 'michinaga', era: '平安', name: 'ふじわらのみちなが', kanji: '藤原道長', title: 'せっかんせいじで さかえた 貴族', icon: '🎎', image: '', color: 'from-pink-100 to-rose-100 border-pink-300', speech: 'わたしは 藤原道長。「この世は わが世」と 歌を よむほど さかえました！', description: '娘を天皇のきさきにして、大きな権力を持った貴族。' },
+            { id: 'shikibu', era: '平安', name: 'むらさきしきぶ', kanji: '紫式部', title: '「げんじものがたり」の さっか', icon: '📜', image: '', color: 'from-indigo-100 to-purple-100 border-indigo-300', speech: 'わたしは 紫式部。世界で はじめての 長編小説「源氏物語」を 書きました！', description: '源氏物語を書いた、平安時代の有名な女性文学者。' },
+            { id: 'shonagon', era: '平安', name: 'せいしょうなごん', kanji: '清少納言', title: '「まくら草子」の さっか', icon: '🪶', image: '', color: 'from-sky-100 to-indigo-100 border-sky-300', speech: 'わたしは 清少納言！「春はあけぼの」で はじまる「枕草子」を 書きました！', description: '春はあけぼの…でおなじみの随筆「枕草子」を書いた作家。' },
+            { id: 'kiyomori', era: '平安', name: 'たいらのきよもり', kanji: '平清盛', title: 'ぶしで はじめて だいじょうだいじん', icon: '⚔️', image: '', color: 'from-red-100 to-orange-100 border-red-300', speech: 'わしは 平清盛！ 武士で はじめて 政治の 一番えらい 役職（太政大臣）になったぞ！', description: '平氏の全盛期を築き、日宋貿易をすすめた武士。' },
+
+            // 鎌倉・室町時代
+            { id: 'yoritomo', era: '鎌倉・室町', name: 'みなもとのよりとも', kanji: '源頼朝', title: 'かまくらばくふを ひらいた しょうぐん', icon: '🏇', image: '', color: 'from-cyan-100 to-blue-100 border-cyan-300', speech: 'わしは 源頼朝！ 武士の よのなかを つくるため、鎌倉幕府を ひらいたぞ！', description: '日本で初めての本格的な武家政権（鎌倉幕府）を開いた。' },
+            { id: 'yoshitsune', era: '鎌倉・室町', name: 'みなもとのよしつね', kanji: '源義経', title: 'たたかいの てんさい ぶしょう', icon: '⚔️', image: '', color: 'from-blue-100 to-sky-100 border-blue-300', speech: 'ぼくは 源義経！ 頼朝の おとうとで、平氏を たおすために 大活躍したよ！', description: '頼朝の弟。八艘飛びなどの伝説を持つ戦いの天才。' },
+            { id: 'tokimune', era: '鎌倉・室町', name: 'ほうじょうときむね', kanji: '北条時宗', title: 'げんこう（モンゴルしゅうらい）を ふせぐ', icon: '🛡️', image: '', color: 'from-slate-100 to-zinc-200 border-slate-300', speech: 'わしは 北条時宗！ 外国（元）からの おしかけを 幕府の ちからで ふせいだぞ！', description: '元寇（蒙古襲来）の危機を乗り越えた鎌倉幕府の執権。' },
+            { id: 'takauji', era: '鎌倉・室町', name: 'あしかがたかうじ', kanji: '足利尊氏', title: 'むろまちばくふを ひらいた しょうぐん', icon: '🏯', image: '', color: 'from-amber-100 to-yellow-100 border-amber-300', speech: 'わしは 足利尊氏！ 室町幕府を ひらいて 新しい 時代を つくったぞ！', description: '室町幕府を開いた初代将軍。' },
+            { id: 'yoshimitsu', era: '鎌倉・室町', name: 'あしかがよしみつ', kanji: '足利義満', title: 'きんかく（金閣寺）を つくった', icon: '✨', image: '', color: 'from-yellow-100 to-amber-200 border-yellow-400', speech: 'わしは 足利義満！ ピカピカに ひかる 金閣寺を つくったぞ！', description: '室町幕府3代将軍。金閣を建て、日明貿易を行った。' },
+            { id: 'yoshimasa', era: '鎌倉・室町', name: 'あしかがよしまさ', kanji: '足利義政', title: 'ぎんかく（銀閣寺）を つくった', icon: '🍵', image: '', color: 'from-stone-100 to-amber-100 border-stone-300', speech: 'わしは 足利義政。しずかで わびさびの ある 銀閣寺を つくりました。', description: '室町幕府8代将軍。東山文化（銀閣、茶道など）を育んだ。' },
+            { id: 'sesshu', era: '鎌倉・室町', name: 'せっしゅう', kanji: '雪舟', title: 'すいぼくがの めいじん', icon: '🖌️', image: '', color: 'from-slate-100 to-gray-200 border-slate-300', speech: 'わたしは 雪舟。すみだけで 美しい 風景を えがく 水墨画の 名人です！', description: '中国で水墨画を学び、独自の画風を完成させた画家。' },
+
+            // 安土桃山時代
+            { id: 'xavier', era: '安土桃山', name: 'フランシスコ・ザビエル', kanji: 'ザビエル', title: 'キリストきょうを つたえた 宣教師', icon: '✝️', image: '', color: 'from-blue-100 to-indigo-100 border-blue-300', speech: 'ハロー！ わたしは ザビエル。日本に はじめて キリスト教を つたえました！', description: '1549年、鹿児島に到着し日本にキリスト教を広めた。' },
+            { id: 'nobunaga', era: '安土桃山', name: 'おだのぶなが', kanji: '織田信長', title: 'てんかいっぶ', icon: '⚔️', image: '', color: 'from-red-100 to-rose-200 border-red-400', speech: 'わしは 織田信長！ てっぽうを つかって 天下統一を めざしたぞ！', description: '楽市楽座や鉄砲隊の活用など、新しいアイデアで全国統一を目指した。' },
+            { id: 'hideyoshi', era: '安土桃山', name: 'とよとみひでよし', kanji: '豊臣秀吉', title: 'てんかとういつ・たいこうけんち', icon: '🏯', image: '', color: 'from-yellow-100 to-amber-200 border-amber-400', speech: 'わしは 豊臣秀吉！ 農民から しょうぐんへ のぼりつめて 天下統一したぞ！', description: '太閤検地や刀狩を行い、日本をひとつに統一した。' },
+            { id: 'ieyasu', era: '安土桃山', name: 'とくがわいえやす', kanji: '徳川家康', title: 'えどばくふを ひらいた しょうぐん', icon: '🏯', image: '', color: 'from-amber-100 to-emerald-100 border-amber-300', speech: 'わしは 徳川家康！ 関ヶ原の戦いに かち、江戸幕府を ひらいたぞ！', description: '260年以上続く平和な江戸時代の基礎を作った初代将軍。' },
+
+            // 江戸時代
+            { id: 'iemitsu', era: '江戸', name: 'とくがわいえみつ', kanji: '徳川家光', title: 'さんきんこうたい・さこく', icon: '🏯', image: '', color: 'from-emerald-100 to-teal-100 border-emerald-300', speech: 'わしは 徳川家光！ 参勤交代や 鎖国（さこく）で 幕府の ちからを つよくした！', description: '江戸幕府3代将軍。参勤交代の制度化や鎖国を完成させた。' },
+            { id: 'yoshimune', era: '江戸', name: 'とくがわよしむね', kanji: '徳川吉宗', title: 'きょうほうの かいかく・めやすばこ', icon: '🌾', image: '', color: 'from-amber-100 to-yellow-100 border-amber-300', speech: 'わしは 徳川吉宗！「あばれんぼう」ではなく、政治の 改革（享保の改革）を がんばったぞ！', description: '江戸幕府8代将軍。目安箱の設置や新田開発を行った。' },
+            { id: 'chikamatsu', era: '江戸', name: 'ちかまつもんざえもん', kanji: '近松門左衛門', title: 'じょうるり・かぶきの げきさっか', icon: '🎭', image: '', color: 'from-pink-100 to-purple-100 border-pink-300', speech: 'わたしは 近松門左衛門。人形浄瑠璃や 歌舞伎の たのしい お話を かきました！', description: '元禄文化を代表する有名な劇作家。' },
+            { id: 'hiroshige', era: '江戸', name: 'うたがわひろしげ', kanji: '歌川広重', title: 'とうかいどうごじゅうさんつぎ', icon: '🖼️', image: '', color: 'from-sky-100 to-blue-100 border-sky-300', speech: 'わたしは 歌川広重！「東海道五十三次」などの 美しい 浮世絵を かきました！', description: '風景版画で有名な江戸時代の浮世絵師。' },
+            { id: 'norinaga', era: '江戸', name: 'もとおりのりなが', kanji: '本居宣長', title: '「こじきでん」を かいた こくがくしゃ', icon: '📖', image: '', color: 'from-orange-100 to-amber-100 border-orange-300', speech: 'わたしは 本居宣長。日本の 古い 本「古事記」を 研究して「古事記伝」を 書きました！', description: '国学を大成させ、古事記の研究に一生をささげた学者。' },
+            { id: 'genpaku', era: '江戸', name: 'すぎたげんぱく', kanji: '杉田玄白', title: '「かいたいしんしょ」を ほんやく', icon: '🩺', image: '', color: 'from-teal-100 to-emerald-100 border-teal-300', speech: 'わたしは 杉田玄白。外国の 解剖書を ほんやくして「解体新書」を つくりました！', description: 'ターヘル・アナトミアを日本語に翻訳し『解体新書』を出版。' },
+            { id: 'tadataka', era: '江戸', name: 'いのうただたか', kanji: '伊能忠敬', title: '日本ちずを あるいて つくった', icon: '🗺️️', image: '', color: 'from-blue-100 to-teal-100 border-blue-300', speech: 'わたしは 伊能忠敬！ 自分の あしで 日本じゅうを あるいて、正しく 正確な 日本地図を つくりました！', description: '50歳をすぎてから天文学を学び、歩いて日本地図を作成。' },
+            { id: 'perry', era: '江戸', name: 'ペリー', kanji: 'マシュー・ペリー', title: 'くろふねで やってきた 提督', icon: '🚢', image: '', color: 'from-slate-100 to-indigo-100 border-slate-300', speech: 'ハーイ！ わたしは ペリー。黒船に のって やってきて、日本に 国を ひらかせました！', description: '1853年、浦賀に黒船で来航し、日本に開国を要求した。' },
+
+            // 明治〜現代時代
+            { id: 'kaishu', era: '明治〜現代', name: 'かつかいしゅう', kanji: '勝海舟', title: 'えどじょう むけいとうじょう', icon: '⚓️', image: '', color: 'from-indigo-100 to-blue-100 border-indigo-300', speech: 'わしは 勝海舟！ 江戸城を 戦わずに あけわたして（無血開城）、まちを まもったぞ！', description: '西郷隆盛と話し合い、江戸城の無血開城を実現した。' },
+            { id: 'ryoma', era: '明治〜現代', name: 'さかもとりょうま', kanji: '坂本龍馬', title: 'さっちょうどうめい・たいせいはんかん', icon: '🌊', image: '', color: 'from-blue-100 to-cyan-100 border-blue-300', speech: 'ぜよ！ ぼくは 坂本龍馬！ 薩摩と 長州を なかなおり（薩長同盟）させたんだ！', description: '薩長同盟の仲介や大政奉還の提案など、幕末に活躍した志士。' },
+            { id: 'saigo', era: '明治〜現代', name: 'さいごうたかもり', kanji: '西郷隆盛', title: 'めいじいしんの ヒーロー', icon: '🐕', image: '', color: 'from-emerald-100 to-green-100 border-emerald-300', speech: 'おいどんは 西郷隆盛！ 薩摩藩を ひきいて 明治維新を おこなったぞ！', description: '明治維新の中心的指導者。上野公園の犬を連れた銅像で有名。' },
+            { id: 'okubo', era: '明治〜現代', name: 'おおくぼとしみち', kanji: '大久保利通', title: 'しょくさんこうぎょう・めいじせいふ', icon: '🎩', image: '', color: 'from-slate-100 to-zinc-200 border-slate-300', speech: 'わたしは 大久保利通。新しい 明治政府の 中心となって 工場や 鉄道を つくりました！', description: '明治政府で強いリーダーシップを発揮し、殖産興業を進めた。' },
+            { id: 'kido', era: '明治〜現代', name: 'きどたかよし', kanji: '木戸孝允', title: 'かつらこごろう・はんせきほうかん', icon: '📜', image: '', color: 'from-cyan-100 to-blue-100 border-cyan-300', speech: 'わたしは 木戸孝允（桂小五郎）。長州藩の リーダーとして 明治維新を 支えました！', description: '維新の三傑（西郷・大久保・木戸）のひとり。版籍奉還などを推進。' },
+            { id: 'meiji_tenno', era: '明治〜現代', name: 'めいじてんのう', kanji: '明治天皇', title: 'めいじ時代の てんのう', icon: '👑', image: '', color: 'from-amber-100 to-red-100 border-amber-300', speech: 'わたしは 明治天皇。日本が 近代的な 国へと 生まれかわる 時代を 見まもりました。', description: '近代日本の出発点となった明治時代の天皇。' },
+            { id: 'itagaki', era: '明治〜現代', name: 'いたがきたいすけ', kanji: '板垣退助', title: 'じゆうみんけんうんどう', icon: '📢', image: '', color: 'from-red-100 to-orange-100 border-red-300', speech: 'わたしは 板垣退助！「板垣死すとも 自由は死せず」！ 国会を つくる 運動を しました！', description: '自由民権運動をすすめ、自由党を結成した政治家。' },
+            { id: 'ito', era: '明治〜現代', name: 'いとうひろぶみ', kanji: '伊藤博文', title: 'しょだい 内閣総理大臣', icon: '🏛️', image: '', color: 'from-blue-100 to-indigo-100 border-blue-300', speech: 'わたしは 伊藤博文！ 日本で はじめての 内閣総理大臣に なりました！', description: '大日本帝国憲法の草案を作成し、初代内閣総理大臣となった。' },
+            { id: 'mutsu', era: '明治〜現代', name: 'むつむねみつ', kanji: '陸奥宗光', title: 'じょうやくかいせい（りょうじさいばんけん）', icon: '🤝', image: '', color: 'from-teal-100 to-cyan-100 border-teal-300', speech: 'わたしは 陸奥宗光。外国との 不平等な 条約（領事裁判権）を なおしました！', description: '外務大臣として不平等条約の改正（領事裁判権の撤廃）に成功。' },
+            { id: 'komura', era: '明治〜現代', name: 'こむらじゅたろう', kanji: '小村寿太郎', title: 'じょうやくかいせい（かんぜいじしゅけん）', icon: '📄', image: '', color: 'from-indigo-100 to-purple-100 border-purple-300', speech: 'わたしは 小村寿太郎。関税自主権を とりもどして 完全な 条約改正を 成しとげました！', description: 'ポーツマス条約の締結や、関税自主権の回復を成し遂げた外相。' },
+            { id: 'fukuzawa', era: '明治〜現代', name: 'ふくざわゆきち', kanji: '福沢諭吉', title: '「がくもんの すすめ」・けいおうぎじゅく', icon: '🎓', image: '', color: 'from-amber-100 to-orange-100 border-amber-300', speech: 'わたしは 福沢諭吉！「天は 人の上に 人を つくらず」！ 学問の 大切さを つたえました！', description: '『学問のすすめ』を書き、慶應義塾をひらいた教育家。' },
+            { id: 'noguchi', era: '明治〜現代', name: 'のぐちひでよ', kanji: '野口英世', title: 'おうねつびょうの けんきゅうしゃ', icon: '🔬', image: '', color: 'from-emerald-100 to-teal-100 border-emerald-300', speech: 'わたしは 野口英世！ やけどに 負けず、世界中で 細菌（さいきん）の 研究を しました！', description: '黄熱病などの研究に一生をささげた世界的な細菌学者。' },
+            { id: 'togo', era: '明治〜現代', name: 'とうごうへいはちろう', kanji: '東郷平八郎', title: 'にちろせんそうの ていとく', icon: '⚓️', image: '', color: 'from-slate-100 to-blue-100 border-slate-300', speech: 'わたしは 東郷平八郎。日露戦争の 日本海海戦で かんたいを ひきいました！', description: '日本海海戦でバルチック艦隊を破った海軍軍人。' },
+
+            // 世界の偉人・文化人（ボーナス）
+            { id: 'edison', era: '世界の偉人', name: 'エジソン', kanji: 'トーマス・エジソン', title: 'ひらめき はつめいか', icon: '💡', image: '', color: 'from-yellow-100 to-amber-100 border-yellow-300', speech: 'ハロー！ ぼくは エジソン！ でんきや レコードを はつめいしたんだよ！', description: 'あかるい電気や蓄音機などを発明した世界の発明王。' },
+            { id: 'cleopatra', era: '世界の偉人', name: 'クレオパトラ', kanji: 'クレオパトラ', title: 'エジプトの じょおう', icon: '🐍', image: '', color: 'from-teal-100 to-emerald-100 border-teal-300', speech: 'ごきげんよう！ クレオパトラよ。エジプトの かしこい 女王でした！', description: '古代エジプト最後の女王。語学や教養にすぐれていた。' },
+            { id: 'nightingale', era: '世界の偉人', name: 'ナイチンゲール', kanji: 'ナイチンゲール', title: 'ランプの かんごしさん', icon: '🕯', image: '', color: 'from-rose-100 to-pink-100 border-rose-300', speech: 'こんにちは！ ナイチンゲールです。びょうきや ケガの人を たすけつづけました。', description: '近代看護の基礎を築いた「ランプの貴婦人」。' },
+            { id: 'tsuda', era: '明治〜現代', name: 'つだうめこ', kanji: '津田梅子', title: 'じょせいきょういくの さきがけ', icon: '🌸', image: '', color: 'from-pink-100 to-purple-100 border-purple-300', speech: 'わたしは 津田梅子。6さいで アメリカへ 留学し、女子英学塾（津田塾大学）を つくりました！', description: '女性の地位向上と女子教育に貢献した教育家。' }
+        ];
+
+        /* State Variables */
+        let currentEraFilter = 'all';
+        let soundEnabled = true;
+        let userStickers = JSON.parse(localStorage.getItem('kids_history_stickers')) || [];
+        let currentQuizIndex = 0;
+        let quizList = [];
+        let quizCorrectCount = 0;
+
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function getFigureDisplayHtml(fig, sizeClasses = 'w-16 h-16', textEmojiSize = 'text-5xl') {
+            if (fig.image && fig.image.trim() !== '') {
+                return `<img src="${fig.image}" alt="${fig.name}" class="${sizeClasses} object-cover rounded-2xl shadow-sm border-2 border-white/80" onerror="this.onerror=null; this.outerHTML='<span class=\\'${textEmojiSize}\\'>${fig.icon}</span>';">`;
+            }
+            return `<span class="${textEmojiSize}">${fig.icon}</span>`;
+        }
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+        }
+
+        // Custom Toast Pop-up Notification
+        function showToast(msg, icon = '✨') {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-message').innerText = msg;
+            document.getElementById('toast-icon').innerText = icon;
+            toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-6');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-6');
+            }, 3000);
+        }
+
+        function playSFX(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'tap') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                osc.frequency.setValueAtTime(783.99, now + 0.2);
+                osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.setValueAtTime(160, now + 0.15);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'fanfare') {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(freq, now + idx * 0.12);
+                    g.gain.setValueAtTime(0.2, now + idx * 0.12);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
+                    o.start(now + idx * 0.12);
+                    o.stop(now + idx * 0.12 + 0.3);
+                });
+            }
+        }
+
+        function speakText(text) {
+            if (!soundEnabled) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.95;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            const btn = document.getElementById('sound-btn');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-xl';
+                btn.className = 'btn-bounce bg-pink-100 hover:bg-pink-200 text-pink-600 p-3 rounded-2xl border-b-4 border-pink-300';
+                playSFX('tap');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-xl';
+                btn.className = 'btn-bounce bg-slate-200 text-slate-500 p-3 rounded-2xl border-b-4 border-slate-300';
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            }
+        }
+
+        function switchMode(mode) {
+            playSFX('tap');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+            const views = ['home', 'zukan', 'quiz', 'minigame', 'stickers'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const activeView = document.getElementById(`view-${mode}`);
+            if (activeView) activeView.classList.remove('hidden');
+
+            if (mode === 'zukan') renderZukan();
+            else if (mode === 'quiz') initQuiz();
+            else if (mode === 'minigame') initMinigame();
+            else if (mode === 'stickers') renderStickers();
+        }
+
+        function filterEra(era, btn) {
+            playSFX('tap');
+            currentEraFilter = era;
+            document.querySelectorAll('.era-tab-btn').forEach(b => {
+                b.className = 'era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-white text-slate-600 border border-slate-200';
+            });
+            btn.className = 'era-tab-btn btn-bounce px-4 py-2 rounded-2xl font-black text-sm whitespace-nowrap bg-pink-500 text-white shadow';
+            renderZukan();
+        }
+
+        function renderZukan() {
+            const grid = document.getElementById('zukan-grid');
+            grid.innerHTML = '';
+
+            const filteredList = currentEraFilter === 'all' 
+                ? HISTORICAL_FIGURES 
+                : HISTORICAL_FIGURES.filter(f => f.era === currentEraFilter);
+
+            document.getElementById('zukan-total-count').innerText = filteredList.length;
+
+            filteredList.forEach(fig => {
+                const card = document.createElement('button');
+                card.onclick = () => openZukanModal(fig.id);
+                card.className = `btn-bounce card-shadow bg-gradient-to-b ${fig.color} rounded-3xl p-3 sm:p-4 flex flex-col items-center justify-between border-4 group text-slate-800`;
+                
+                const displayHtml = getFigureDisplayHtml(fig, 'w-16 h-16 sm:w-20 sm:h-20', 'text-5xl');
+
+                card.innerHTML = `
+                    <div class="text-xs font-black bg-white/80 px-2 py-0.5 rounded-full text-slate-600 mb-1">${fig.era}</div>
+                    <div class="my-2 group-hover:scale-110 transition-transform flex items-center justify-center">
+                        ${displayHtml}
+                    </div>
+                    <div class="text-center w-full">
+                        <span class="block text-[11px] font-bold text-slate-500 truncate">${fig.title}</span>
+                        <span class="block text-base font-black text-slate-900 leading-tight">${fig.name}</span>
+                        <span class="block text-[10px] text-slate-400 font-bold">（${fig.kanji}）</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openZukanModal(figId) {
+            playSFX('tap');
+            const fig = HISTORICAL_FIGURES.find(f => f.id === figId);
+            if (!fig) return;
+
+            const modalContent = document.getElementById('modal-content');
+            const modalDisplayHtml = getFigureDisplayHtml(fig, 'w-28 h-28', 'text-7xl');
+
+            modalContent.innerHTML = `
+                <div class="mx-auto flex justify-center animate-bounce mb-2">
+                    ${modalDisplayHtml}
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">${fig.era} 時代</span>
+                    <h3 class="text-2xl font-black text-slate-800 mt-2">${fig.name}</h3>
+                    <p class="text-xs text-slate-400 font-bold">（${fig.kanji}）</p>
+                    <p class="text-xs font-black text-pink-600 mt-1">${fig.title}</p>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 text-slate-700 font-bold text-sm text-left leading-relaxed">
+                    🗣️ 「${fig.speech}」
+                </div>
+                <div class="bg-slate-50 p-3 rounded-2xl text-xs text-slate-600 font-bold text-left">
+                    💡 どんな人？：${fig.description}
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="speakText('${fig.speech}')" class="btn-bounce flex-1 bg-pink-500 hover:bg-pink-600 text-white font-black py-3 rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm">
+                        🗣️ こえを きく
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('zukan-modal').classList.remove('hidden');
+            speakText(fig.speech);
+        }
+
+        function closeZukanModal() {
+            playSFX('tap');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            document.getElementById('zukan-modal').classList.add('hidden');
+        }
+
+        function initQuiz() {
+            quizList = [...HISTORICAL_FIGURES].sort(() => Math.random() - 0.5);
+            currentQuizIndex = 0;
+            quizCorrectCount = 0;
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            if (currentQuizIndex >= quizList.length) {
+                currentQuizIndex = 0;
+                quizList = [...HISTORICAL_FIGURES].sort(() => Math.random() - 0.5);
+            }
+
+            const target = quizList[currentQuizIndex];
+            document.getElementById('quiz-progress-text').innerText = `だい ${currentQuizIndex + 1} もん`;
+            document.getElementById('quiz-score-text').innerText = `せいかい: ${quizCorrectCount}`;
+
+            const silBox = document.getElementById('quiz-silhouette-box');
+            silBox.className = 'silhouette-mode bg-amber-50 border-4 border-dashed border-amber-200 rounded-3xl p-6 h-56 flex flex-col items-center justify-center relative overflow-hidden';
+            
+            const quizDisplayHtml = getFigureDisplayHtml(target, 'w-24 h-24', 'text-7xl');
+            document.getElementById('quiz-char-icon').innerHTML = quizDisplayHtml;
+            document.getElementById('quiz-hint').innerText = `時代: ${target.era} （ヒント: ${target.title}）`;
+            document.getElementById('quiz-feedback-overlay').classList.add('hidden');
+
+            speakText('これ だれだか わかるかな？');
+
+            // Generate Options
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            let distractors = HISTORICAL_FIGURES.filter(f => f.id !== target.id).sort(() => Math.random() - 0.5).slice(0, 3);
+            let choices = [target, ...distractors].sort(() => Math.random() - 0.5);
+
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-bounce bg-amber-100 hover:bg-amber-200 border-4 border-amber-400 font-black text-amber-950 py-3 px-4 rounded-2xl text-base shadow-md truncate';
+                btn.innerText = `${choice.name}`;
+                btn.onclick = () => checkQuizAnswer(choice.id, target);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkQuizAnswer(selectedId, target) {
+            if (selectedId === target.id) {
+                playSFX('correct');
+                quizCorrectCount++;
+                const silBox = document.getElementById('quiz-silhouette-box');
+                silBox.className = 'revealed-mode bg-pink-50 border-4 border-pink-300 rounded-3xl p-6 h-56 flex flex-col items-center justify-center relative overflow-hidden';
+                
+                const feedback = document.getElementById('quiz-feedback-overlay');
+                document.getElementById('quiz-feedback-name').innerText = `せいかい！ ${target.name}`;
+                feedback.classList.remove('hidden');
+
+                triggerConfetti();
+                addSticker(target.icon, target.name, target.image);
+                speakText(`せいかい！ ${target.name} だよ！`);
+
+                setTimeout(() => {
+                    currentQuizIndex++;
+                    loadQuizQuestion();
+                }, 2500);
+            } else {
+                playSFX('wrong');
+                showToast('ざんねん！ もういちど えらんでね！', '❌');
+                speakText('ざんねん！ ちがうよ。もういちど えらんでね！');
+            }
+        }
+
+        let gameScore = 0;
+        let bulbStates = [false, false, false, false, false];
+
+        function initMinigame() {
+            gameScore = 0;
+            bulbStates = [false, false, false, false, false];
+            document.getElementById('game-score').innerText = gameScore;
+            document.getElementById('game-message').innerText = 'スイッチを おして でんきを つけよう！';
+            renderBulbs();
+            speakText('エジソンの でnき パズル！ なんかいも ためして ぜんぶの でんきを つけよう！');
+        }
+
+        function renderBulbs() {
+            const grid = document.getElementById('bulb-grid');
+            grid.innerHTML = '';
+
+            bulbStates.forEach((isOn, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `btn-bounce w-14 h-16 sm:w-16 sm:h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all duration-300 shadow-lg ${
+                    isOn
+                    ? 'bg-yellow-300 border-yellow-500 text-yellow-900 glow-effect scale-105'
+                    : 'bg-slate-800 border-slate-600 text-slate-500'
+                }`;
+                btn.onclick = () => toggleBulb(idx);
+                btn.innerHTML = `
+                    <span class="text-xl sm:text-2xl">${isOn ? '💡' : '🔌'}</span>
+                    <span class="text-[9px] sm:text-[10px] font-bold mt-1">${isOn ? 'ON' : 'OFF'}</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function toggleBulb(index) {
+            playSFX('tap');
+            bulbStates[index] = !bulbStates[index];
+            if (index > 0) bulbStates[index - 1] = !bulbStates[index - 1];
+
+            gameScore = bulbStates.filter(Boolean).length;
+            document.getElementById('game-score').innerText = gameScore;
+
+            renderBulbs();
+
+            if (gameScore === 5) {
+                playSFX('fanfare');
+                triggerConfetti();
+                addSticker('💡', 'エジソン');
+                document.getElementById('game-message').innerText = '🎉 すごい！ ぜんぶ ついたよ！ ひらめき かんせい！';
+                speakText('すごい！ ぜんぶ でんきが ついたよ！ ひらめき かんせい！');
+            } else {
+                document.getElementById('game-message').innerText = `押したボタンと ひだりとなり が かわったよ！`;
+            }
+        }
+
+        function resetGame() {
+            playSFX('tap');
+            initMinigame();
+        }
+
+        function addSticker(symbol, label = '', imageUrl = '') {
+            userStickers.push({
+                symbol: symbol,
+                label: label,
+                imageUrl: imageUrl,
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('kids_history_stickers', JSON.stringify(userStickers));
+            updateStickerCount();
+        }
+
+        function updateStickerCount() {
+            document.getElementById('sticker-count').innerText = userStickers.length;
+        }
+
+        function renderStickers() {
+            const grid = document.getElementById('sticker-grid');
+            grid.innerHTML = '';
+
+            if (userStickers.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-400 font-bold">
+                        <p class="text-4xl mb-2">📄</p>
+                        <p>まだ シールが ないよ。<br>クイズや パズルで あつめよう！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            userStickers.forEach((st) => {
+                const slot = document.createElement('div');
+                slot.className = 'btn-bounce bg-amber-50 border-2 border-amber-200 rounded-2xl p-2 flex flex-col items-center justify-center shadow-sm relative group min-h-[90px]';
+
+                let contentMarkup = '';
+                if (st.imageUrl && st.imageUrl.trim() !== '') {
+                    contentMarkup = `<img src="${st.imageUrl}" class="w-12 h-12 rounded-lg object-cover border border-amber-300 shadow-sm" alt="sticker">`;
+                } else {
+                    contentMarkup = `<span class="text-3xl">${st.symbol}</span>`;
+                }
+
+                slot.innerHTML = `
+                    <div class="animate-bounce">${contentMarkup}</div>
+                    <span class="text-[10px] text-amber-800 font-black mt-1 text-center truncate w-full">${st.label || 'シール'}</span>
+                `;
+                grid.appendChild(slot);
+            });
+        }
+
+        /* Confetti Effect */
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#f472b6', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa'];
+
+            for (let i = 0; i < 70; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.8) * 12,
+                    size: Math.random() * 10 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    vRot: (Math.random() - 0.5) * 10
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let alive = false;
+
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3;
+                    p.rotation += p.vRot;
+
+                    if (p.y < canvas.height) alive = true;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                if (alive) requestAnimationFrame(animate);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            animate();
+        }
+
+        /* Startup initialization */
+        window.onload = function() {
+            updateStickerCount();
+            renderZukan();
+
+            document.body.addEventListener('click', function initAudioOnUserGesture() {
+                initAudio();
+                document.body.removeEventListener('click', initAudioOnUserGesture);
+            }, { once: true });
+        };
+    </script>
+</body>
+</html>
